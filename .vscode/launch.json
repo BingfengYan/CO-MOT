@@ -1,0 +1,21 @@
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {"CUDA_VISIBLE_DEVICES":"0", "CUBLAS_WORKSPACE_CONFIG":":4096:8"},
+            // "args": ["--meta_arch", "motr_unincost", "--dataset_file", "e2e_dance", "--epoch", "20", "--with_box_refine", "--lr_drop", "8", "--lr", "2e-4", "--lr_backbone", "2e-5", "--pretrained", "/home/hadoop-vacv/yanfeng/project/MOTRv2/MOTRv3/exps/motrv2ch_uni5cost6g/run2/checkpoint.pth", "--batch_size", "2", "--sample_mode", "random_interval", "--sample_interval", "10", "--sampler_lengths", "5", "--merger_dropout", "0", "--dropout", "0", "--random_drop", "0.1", "--fp_ratio", "0.3", "--query_interaction_layer", "GQIM", "--num_queries", "60", "--append_crowd", "--use_checkpoint", "--mot_path", "/mnt/dolphinfs/ssd_pool/docker/user/hadoop-vacv/yanfeng/data/", "--match_type", "gmatch", "--g_size", "3", "--resume", "/home/hadoop-vacv/yanfeng/project/MOTRv2/CO-MOT/exps/motrv2ch_uni5cost3ggoon/run1/checkpoint.pth"]
+
+            // "args": ["--meta_arch", "dino", "--dataset_file", "e2e_dance", "--epoch", "20", "--with_box_refine", "--lr_drop", "8", "--lr", "2e-4", "--lr_backbone", "2e-5", "--pretrained", "/home/hadoop-vacv/yanfeng/project/MOTRv2/MOTRv3/exps/motrv2ch_uni5cost6g/run2/checkpoint.pth", "--batch_size", "2", "--sample_mode", "random_interval", "--sample_interval", "10", "--sampler_lengths", "5", "--merger_dropout", "0", "--dropout", "0", "--random_drop", "0.1", "--fp_ratio", "0.3", "--query_interaction_layer", "GQIM", "--num_queries", "900", "--append_crowd", "--use_checkpoint", "--mot_path", "/mnt/dolphinfs/ssd_pool/docker/user/hadoop-vacv/yanfeng/data/", "--match_type", "HungarianMatcher", "--g_size", "1", "--num_feature_levels", "5", "--dim_feedforward", "2048", "--resume", "/home/hadoop-vacv/yanfeng/project/MOTRv2/CO-MOT/checkpoints/dino_0031_5scale.pth"]
+            "args": ["--meta_arch", "mot_dino", "--dataset_file", "e2e_dance", "--epoch", "20", "--with_box_refine", "--lr_drop", "8", "--lr", "2e-4", "--lr_backbone", "2e-5", "--pretrained", "/home/hadoop-vacv/yanfeng/project/MOTRv2/CO-MOT/checkpoints/dino_0031_5scale.pth", "--batch_size", "2", "--sample_mode", "random_interval", "--sample_interval", "10", "--sampler_lengths", "5", "--merger_dropout", "0", "--dropout", "0", "--random_drop", "0.1", "--fp_ratio", "0.3", "--query_interaction_layer", "GQIM", "--num_queries", "900", "--append_crowd", "--use_checkpoint", "--mot_path", "/mnt/dolphinfs/ssd_pool/docker/user/hadoop-vacv/yanfeng/data/", "--match_type", "HungarianMatcher", "--g_size", "1", "--num_feature_levels", "5", "--dim_feedforward", "2048"] 
+        }
+    ]
+}

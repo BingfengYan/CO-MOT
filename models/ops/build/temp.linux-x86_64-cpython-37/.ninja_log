@@ -1,0 +1,4 @@
+# ninja log v5
+8	50326	1682736456000000000	/mnt/dolphinfs/hdd_pool/docker/user/hadoop-vacv/yanfeng/project/MOTRv2/MOTRv3/models/ops/build/temp.linux-x86_64-cpython-37/mnt/dolphinfs/hdd_pool/docker/user/hadoop-vacv/yanfeng/project/MOTRv2/MOTRv3/models/ops/src/cpu/ms_deform_attn_cpu.o	1a7a04fa8aa332bc
+14	91444	1682736491000000000	/mnt/dolphinfs/hdd_pool/docker/user/hadoop-vacv/yanfeng/project/MOTRv2/MOTRv3/models/ops/build/temp.linux-x86_64-cpython-37/mnt/dolphinfs/hdd_pool/docker/user/hadoop-vacv/yanfeng/project/MOTRv2/MOTRv3/models/ops/src/vision.o	781d7dd8aea58757
+3	109768	1682736515000000000	/mnt/dolphinfs/hdd_pool/docker/user/hadoop-vacv/yanfeng/project/MOTRv2/MOTRv3/models/ops/build/temp.linux-x86_64-cpython-37/mnt/dolphinfs/hdd_pool/docker/user/hadoop-vacv/yanfeng/project/MOTRv2/MOTRv3/models/ops/src/cuda/ms_deform_attn_cuda.o	67f3872547af6227
