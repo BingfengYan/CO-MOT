@@ -10,10 +10,6 @@
 
 This repository is an official implementation of [CO-MOT](https://arxiv.org/abs/2305.12724).
 
-# News
-[2023/5/24]: our code is merge into [detrex](https://github.com/IDEA-Research/detrex)
-[2023/5/24]: We release a our code and paper in arxiv
-
 
 
 **TO DO**
@@ -29,9 +25,9 @@ Bridging the Gap Between End-to-end and Non-End-to-end Multi-Object Tracking.
 **Abstract.** Existing end-to-end Multi-Object Tracking (e2e-MOT) methods have not surpassed non-end-to-end tracking-by-detection methods. One potential reason is its label assignment strategy during training that consistently binds the tracked objects with tracking queries and then assigns the few newborns to detection queries. With one-to-one bipartite matching, such an assignment will yield unbalanced training, i.e., scarce positive samples for detection queries, especially for an enclosed scene, as the majority of the newborns come on stage at the beginning of videos. Thus, e2e-MOT will be easier to yield a tracking terminal without renewal or re-initialization, compared to other tracking-by-detection methods. To alleviate this problem, we present Co-MOT, a simple and effective method to facilitate e2e-MOT by a novel coopetition label assignment with a shadow concept. Specifically, we add tracked objects to the matching targets for detection queries when performing the label assignment for training the intermediate decoders. For query initialization, we expand each query by a set of shadow counterparts with limited disturbance to itself. With extensive ablations, Co-MOT achieves superior performance without extra costs, e.g., 69.4% HOTA on DanceTrack and 52.8% TETA on BDD100K. Impressively, Co-MOT only requires 38\% FLOPs of MOTRv2 to attain a similar performance, resulting in the 1.4× faster inference speed.
 
 <!-- ## News
-- **2022.11.18** MOTRv2 paper is available on [arxiv](https://arxiv.org/abs/2211.09791).
-- **2022.10.27** Our DanceTrack challenge tech report is released [[arxiv]](https://arxiv.org/abs/2210.15281) [[ECCVW Challenge]](https://motcomplex.github.io/index.html#challenge).
-- **2022.10.05** MOTRv2 achieved the 1st place in the [1st Multiple People Tracking in Group Dance Challenge](https://motcomplex.github.io/). -->
+- **2023.5.31** our code is merge into [detrex](https://github.com/IDEA-Research/detrex).
+- **2023.5.24** We release a our code and paper
+
 
 ## Main Results
 
