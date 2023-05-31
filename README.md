@@ -10,6 +10,12 @@
 
 This repository is an official implementation of [CO-MOT](https://arxiv.org/abs/2305.12724).
 
+# News
+[2023/5/24]: our code is merge into [detrex](https://github.com/IDEA-Research/detrex)
+[2023/5/24]: We release a our code and paper in arxiv
+
+
+
 **TO DO**
 1. release bdd100K, MOT17 model.
 2. add DINO backbone
