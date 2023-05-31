@@ -24,7 +24,7 @@ Bridging the Gap Between End-to-end and Non-End-to-end Multi-Object Tracking.
 
 **Abstract.** Existing end-to-end Multi-Object Tracking (e2e-MOT) methods have not surpassed non-end-to-end tracking-by-detection methods. One potential reason is its label assignment strategy during training that consistently binds the tracked objects with tracking queries and then assigns the few newborns to detection queries. With one-to-one bipartite matching, such an assignment will yield unbalanced training, i.e., scarce positive samples for detection queries, especially for an enclosed scene, as the majority of the newborns come on stage at the beginning of videos. Thus, e2e-MOT will be easier to yield a tracking terminal without renewal or re-initialization, compared to other tracking-by-detection methods. To alleviate this problem, we present Co-MOT, a simple and effective method to facilitate e2e-MOT by a novel coopetition label assignment with a shadow concept. Specifically, we add tracked objects to the matching targets for detection queries when performing the label assignment for training the intermediate decoders. For query initialization, we expand each query by a set of shadow counterparts with limited disturbance to itself. With extensive ablations, Co-MOT achieves superior performance without extra costs, e.g., 69.4% HOTA on DanceTrack and 52.8% TETA on BDD100K. Impressively, Co-MOT only requires 38\% FLOPs of MOTRv2 to attain a similar performance, resulting in the 1.4× faster inference speed.
 
--- ## News
+## News
 - **2023.5.31** our code is merge into [detrex](https://github.com/IDEA-Research/detrex).
 - **2023.5.24** We release a our code and paper
 
@@ -82,7 +82,6 @@ The codebase is built on top of [Deformable DETR](https://github.com/fundamental
 │   ├── test
 │   ├── train
 │   └── val
-├── det_db_motrv2.json
 ```
 
 You may use the following command for generating crowdhuman trainval annotation:
