@@ -26,7 +26,7 @@ Bridging the Gap Between End-to-end and Non-End-to-end Multi-Object Tracking.
 ## News
 
 - **2023.7.25** Release weight of BDD100K, MOT17
-- **2023.6.28** Using our method, we achieved \bref{second} place in CVSports during CVPR2023.
+- **2023.6.28** Using our method, we achieved \bref{second} place in CVSports during CVPR2023, HOTA(69.54) [SoccerNet](https://www.soccer-net.org/tasks/tracking).
 - **2023.5.31** our code is merge into [detrex](https://github.com/IDEA-Research/detrex).
 - **2023.5.24** We release a our code and paper
 
