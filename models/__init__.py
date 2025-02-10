@@ -40,15 +40,18 @@ def build_deforamble_transformer(args):
     
 
 from .motr import build as build_motr
-from .motr_co import build as build_motr_uninCost
+from .motr_uninC import build as build_motr_uninC
+from .motr_uninCost import build as build_motr_uninCost
 
 
+from .tmotr_uni import build as build_tmotr_uni
 
 def build_model(args):
     arch_catalog = {
         'motr': build_motr,
-        
+        'motr_uninc': build_motr_uninC,
         'motr_unincost': build_motr_uninCost,
+        'tmotr_uni': build_tmotr_uni,
     }
     assert args.meta_arch in arch_catalog, 'invalid arch: {}'.format(args.meta_arch)
     build_func = arch_catalog[args.meta_arch]

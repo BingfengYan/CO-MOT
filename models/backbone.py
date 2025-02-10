@@ -19,7 +19,8 @@ import torchvision
 from torch import nn
 from torchvision.models._utils import IntermediateLayerGetter
 from typing import Dict, List
-
+from collections import OrderedDict
+        
 from util.misc import NestedTensor, is_main_process
 from .position_encoding import build_position_encoding
 from .darknet import CSPDarknet
@@ -95,21 +96,6 @@ class BackboneBase(nn.Module):
                 return_layers = {'layer4': "0"}
                 self.strides = [32]
                 self.num_channels = [2048]
-        elif name in ('CSPDarknet'):
-            if not train_backbone:
-                for name, parameter in backbone.named_parameters():
-                    if not train_backbone or 'dark3' not in name and 'dark4' not in name and 'dark5' not in name:
-                        parameter.requires_grad_(False)
-                backbone.eval()
-                
-            if return_interm_layers:
-                return_layers = {"dark3": "0", "dark4": "1", "dark5": "2"}
-                self.strides = [8, 16, 32]
-                self.num_channels = [320, 640, 1280]
-            else:
-                return_layers = {'dark5': "0"}
-                self.strides = [32]
-                self.num_channels = [2048]
                 
         self.body = IntermediateLayerGetter(backbone, return_layers=return_layers)
 
@@ -123,7 +109,35 @@ class BackboneBase(nn.Module):
             out[name] = NestedTensor(x, mask)
         return out
 
+class dinov2(nn.Module):
+    def __init__(self):
+        super().__init__()
+        import sys
+        sys.path.append('thirdparty/dinov2')
+        import hubconf
+        self.backbone = hubconf.dinov2_vits14(block_chunks=4)
+        self.strides = [self.backbone.patch_size, self.backbone.patch_size, self.backbone.patch_size]
+        self.num_channels = [384, 384, 384]
         
+    def forward(self, tensor_list: NestedTensor):
+        # xs = self.body(tensor_list.tensors)
+        outputs = self.backbone._get_intermediate_layers_not_chunked(tensor_list.tensors, 3)
+        outputs = [self.backbone.norm(out) for out in outputs]
+        class_tokens = [out[:, 0] for out in outputs]
+        outputs = [out[:, 1:] for out in outputs]
+        B, _, w, h = tensor_list.tensors.shape
+        xs = OrderedDict()
+        for out, name in zip(outputs, ["0","1","2"]):
+            xs[name] = out.reshape(B, w // self.backbone.patch_size, h // self.backbone.patch_size, -1).permute(0, 3, 1, 2).contiguous()
+
+        out: Dict[str, NestedTensor] = {}
+        for name, x in xs.items():
+            m = tensor_list.mask
+            assert m is not None
+            mask = F.interpolate(m[None].float(), size=x.shape[-2:]).to(torch.bool)[0]
+            out[name] = NestedTensor(x, mask)
+        return out
+            
 class Backbone(BackboneBase):
     """ResNet backbone with frozen BatchNorm."""
     def __init__(self, name: str,
@@ -153,7 +167,6 @@ class Backbone(BackboneBase):
                         m.eps = 1e-3
                         m.momentum = 0.03
             backbone.apply(init_yolo)
-
         else:
             print("number of channels are hard coded")
         super().__init__(backbone, train_backbone, return_interm_layers, name)
@@ -185,6 +198,9 @@ def build_backbone(args):
     position_embedding = build_position_encoding(args)
     train_backbone = args.lr_backbone > 0
     return_interm_layers = args.masks or (args.num_feature_levels > 1)
-    backbone = Backbone(args.backbone, train_backbone, return_interm_layers, args.dilation)
+    if args.backbone in ('dinov2'):
+        backbone = dinov2()
+    else:
+        backbone = Backbone(args.backbone, train_backbone, return_interm_layers, args.dilation)
     model = Joiner(backbone, position_embedding)
     return model

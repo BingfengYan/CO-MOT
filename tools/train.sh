@@ -1,14 +1,4 @@
 #!/usr/bin/env bash
-###
- # @Author: 颜峰 && bphengyan@163.com
- # @Date: 2023-05-19 17:19:11
- # @LastEditors: 颜峰 && bphengyan@163.com
- # @LastEditTime: 2023-05-22 09:54:42
- # @FilePath: /CO-MOT/tools/train.sh
- # @Description: 
- # 
- # Copyright (c) 2023 by ${git_name_email}, All Rights Reserved. 
-### 
 # ------------------------------------------------------------------------
 # Copyright (c) 2022 megvii-research. All Rights Reserved.
 # ------------------------------------------------------------------------

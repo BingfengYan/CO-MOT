@@ -1,13 +1,3 @@
-'''
-Author: 颜峰 && bphengyan@163.com
-Date: 2023-05-18 13:18:25
-LastEditors: 颜峰 && bphengyan@163.com
-LastEditTime: 2023-05-23 17:20:04
-FilePath: /CO-MOT/main.py
-Description: 
-
-Copyright (c) 2023 by ${git_name_email}, All Rights Reserved. 
-'''
 # ------------------------------------------------------------------------
 # Copyright (c) 2022 megvii-research. All Rights Reserved.
 # ------------------------------------------------------------------------
@@ -34,7 +24,7 @@ from util.tool import load_model
 import util.misc as utils
 import datasets.samplers as samplers
 from datasets import build_dataset
-from engine import train_one_epoch_mot, evaluate
+from engine import train_one_epoch_mot
 from models import build_model
 import torch.backends.cudnn as cudnn
 cudnn.benchmark = True
@@ -56,7 +46,8 @@ def get_args_parser():
     parser.add_argument('--lr_drop', default=40, type=int)
     parser.add_argument('--save_period', default=50, type=int)
     parser.add_argument('--lr_drop_epochs', default=None, type=int, nargs='+')
-    parser.add_argument('--clip_max_norm', default=0.1, type=float, help='gradient clipping max norm')
+    parser.add_argument('--clip_max_norm', default=0.1, type=float,
+                        help='gradient clipping max norm')
 
     parser.add_argument('--meta_arch', default='deformable_detr', type=str)
 
@@ -80,15 +71,20 @@ def get_args_parser():
     parser.add_argument('--nms_iou_threshold', default=-1, type=float)  # for DINO
     
     # Model parameters
-    parser.add_argument('--frozen_weights', type=str, default=None, help="Path to the pretrained model. If set, only the mask head will be trained")
-    # parser.add_argument('--num_anchors', default=1, type=int)
+    parser.add_argument('--frozen_weights', type=str, default=None,
+                        help="Path to the pretrained model. If set, only the mask head will be trained")
+    parser.add_argument('--num_anchors', default=1, type=int)
 
     # * Backbone
-    parser.add_argument('--backbone', default='resnet50', type=str, help="Name of the convolutional backbone to use")
+    parser.add_argument('--backbone', default='resnet50', type=str,
+                        help="Name of the convolutional backbone to use")
     parser.add_argument('--enable_fpn', action='store_true')
-    parser.add_argument('--dilation', action='store_true', help="If true, we replace stride with dilation in the last convolutional block (DC5)")
-    parser.add_argument('--position_embedding', default='sine', type=str, choices=('sine', 'learned'), help="Type of positional embedding to use on top of the image features")
-    parser.add_argument('--position_embedding_scale', default=2 * np.pi, type=float, help="position / size * scale")
+    parser.add_argument('--dilation', action='store_true',
+                        help="If true, we replace stride with dilation in the last convolutional block (DC5)")
+    parser.add_argument('--position_embedding', default='sine', type=str, choices=('sine', 'learned'),
+                        help="Type of positional embedding to use on top of the image features")
+    parser.add_argument('--position_embedding_scale', default=2 * np.pi, type=float,
+                        help="position / size * scale")
     parser.add_argument('--num_feature_levels', default=4, type=int, help='number of feature levels')
     parser.add_argument('--pe_temperatureH', default=20, type=int, help='')  # for DINO
     parser.add_argument('--pe_temperatureW', default=20, type=int, help='')  # for DINO
@@ -97,13 +93,20 @@ def get_args_parser():
 
     # * Transformer
     parser.add_argument('--trans_mode', default='DeformableTransformer', help='DeformableTransformer, DeformableTransformerCross')
-    parser.add_argument('--enc_layers', default=6, type=int,  help="Number of encoding layers in the transformer")
-    parser.add_argument('--dec_layers', default=6, type=int, help="Number of decoding layers in the transformer")
-    parser.add_argument('--dim_feedforward', default=1024, type=int, help="Intermediate size of the feedforward layers in the transformer blocks")
-    parser.add_argument('--hidden_dim', default=256, type=int, help="Size of the embeddings (dimension of the transformer)")
-    parser.add_argument('--dropout', default=0.1, type=float, help="Dropout applied in the transformer")
-    parser.add_argument('--nheads', default=8, type=int, help="Number of attention heads inside the transformer's attentions")
-    parser.add_argument('--num_queries', default=300, type=int, help="Number of query slots")
+    parser.add_argument('--enc_layers', default=6, type=int,
+                        help="Number of encoding layers in the transformer")
+    parser.add_argument('--dec_layers', default=6, type=int,
+                        help="Number of decoding layers in the transformer")
+    parser.add_argument('--dim_feedforward', default=1024, type=int,
+                        help="Intermediate size of the feedforward layers in the transformer blocks")
+    parser.add_argument('--hidden_dim', default=256, type=int,
+                        help="Size of the embeddings (dimension of the transformer)")
+    parser.add_argument('--dropout', default=0.1, type=float,
+                        help="Dropout applied in the transformer")
+    parser.add_argument('--nheads', default=8, type=int,
+                        help="Number of attention heads inside the transformer's attentions")
+    parser.add_argument('--num_queries', default=300, type=int,
+                        help="Number of query slots")
     parser.add_argument('--dec_n_points', default=4, type=int)
     parser.add_argument('--enc_n_points', default=4, type=int)
     parser.add_argument('--decoder_cross_self', default=False, action='store_true')
@@ -116,6 +119,7 @@ def get_args_parser():
     parser.add_argument('--val_width', default=800, type=int)
     parser.add_argument('--filter_ignore', action='store_true')
     parser.add_argument('--append_crowd', default=False, action='store_true')
+    parser.add_argument('--append_crowd2', default=False, action='store_true')
     parser.add_argument('--decoder_layer_noise', default=False, action='store_true')  # for DINO
     parser.add_argument('--dln_xy_noise', default=0.2, type=float, help="")  # for DINO
     parser.add_argument('--dln_hw_noise', default=0.2, type=float, help="")  # for DINO
@@ -143,17 +147,22 @@ def get_args_parser():
     parser.add_argument('--interm_loss_coef', default=1.0, type=float)  # for DINO
     
     # * Segmentation
-    parser.add_argument('--masks', action='store_true', help="Train segmentation head if the flag is provided")
+    parser.add_argument('--masks', action='store_true',
+                        help="Train segmentation head if the flag is provided")
 
     # Loss
-    parser.add_argument('--no_aux_loss', dest='aux_loss', action='store_false', help="Disables auxiliary decoding losses (loss at each layer)")
+    parser.add_argument('--no_aux_loss', dest='aux_loss', action='store_false',
+                        help="Disables auxiliary decoding losses (loss at each layer)")
 
     # * Matcher
     parser.add_argument('--match_type', default='', help='gmatch')
     parser.add_argument('--mix_match', action='store_true',)
-    parser.add_argument('--set_cost_class', default=2, type=float, help="Class coefficient in the matching cost")
-    parser.add_argument('--set_cost_bbox', default=5, type=float, help="L1 box coefficient in the matching cost")
-    parser.add_argument('--set_cost_giou', default=2, type=float, help="giou box coefficient in the matching cost")
+    parser.add_argument('--set_cost_class', default=2, type=float,
+                        help="Class coefficient in the matching cost")
+    parser.add_argument('--set_cost_bbox', default=5, type=float,
+                        help="L1 box coefficient in the matching cost")
+    parser.add_argument('--set_cost_giou', default=2, type=float,
+                        help="giou box coefficient in the matching cost")
     parser.add_argument('--match_unstable_error', default=True, action='store_true')  # for DINO
 
     # * Loss coefficients
@@ -172,11 +181,14 @@ def get_args_parser():
     parser.add_argument('--coco_panoptic_path', type=str)
     parser.add_argument('--remove_difficult', action='store_true')
 
-    parser.add_argument('--output_dir', default='tmp/',  help='path where to save, empty for no saving')
-    parser.add_argument('--device', default='cuda',  help='device to use for training / testing')
+    parser.add_argument('--output_dir', default='',
+                        help='path where to save, empty for no saving')
+    parser.add_argument('--device', default='cuda',
+                        help='device to use for training / testing')
     parser.add_argument('--seed', default=42, type=int)
     parser.add_argument('--resume', default='', help='resume from checkpoint')
-    parser.add_argument('--start_epoch', default=0, type=int, metavar='N', help='start epoch')
+    parser.add_argument('--start_epoch', default=0, type=int, metavar='N',
+                        help='start epoch')
     parser.add_argument('--eval', action='store_true')
     parser.add_argument('--vis', action='store_true')
     parser.add_argument('--num_workers', default=2, type=int)
@@ -187,11 +199,16 @@ def get_args_parser():
     parser.add_argument('--mot_path', default='/data/Dataset/mot', type=str)
     parser.add_argument('--det_db', default='', type=str)
     parser.add_argument('--input_video', default='figs/demo.mp4', type=str)
-    parser.add_argument('--data_txt_path_train', default='./datasets/data_path/detmot17.train', type=str, help="path to dataset txt split")
-    parser.add_argument('--data_txt_path_val',  default='./datasets/data_path/detmot17.train', type=str, help="path to dataset txt split")
+    parser.add_argument('--data_txt_path_train',
+                        default='./datasets/data_path/detmot17.train', type=str,
+                        help="path to dataset txt split")
+    parser.add_argument('--data_txt_path_val',
+                        default='./datasets/data_path/detmot17.train', type=str,
+                        help="path to dataset txt split")
     parser.add_argument('--img_path', default='data/valid/JPEGImages/')
 
-    parser.add_argument('--query_interaction_layer', default='QIM', type=str, help="GQIM, QIM, QIMv2")
+    parser.add_argument('--query_interaction_layer', default='QIM', type=str,
+                        help="GQIM, QIM, QIMv2")
     parser.add_argument('--sample_mode', type=str, default='fixed_interval')
     parser.add_argument('--sample_interval', type=int, default=1)
     parser.add_argument('--random_drop', type=float, default=0)
@@ -258,26 +275,29 @@ def main(args):
         sampler_train = torch.utils.data.RandomSampler(dataset_train)
         sampler_val = torch.utils.data.SequentialSampler(dataset_val)
 
-    batch_sampler_train = torch.utils.data.BatchSampler(sampler_train, args.batch_size, drop_last=True)
+    batch_sampler_train = torch.utils.data.BatchSampler(
+        sampler_train, args.batch_size, drop_last=True)
     collate_fn = utils.mot_collate_fn
     data_loader_train = DataLoader(dataset_train, batch_sampler=batch_sampler_train,
                                    collate_fn=collate_fn, num_workers=args.num_workers,
                                    pin_memory=True)
-    data_loader_val = DataLoader(dataset_val, batch_size=1, sampler=sampler_val,
+    data_loader_val = DataLoader(dataset_val, args.batch_size, sampler=sampler_val,
                                  drop_last=False, collate_fn=collate_fn, num_workers=args.num_workers,
                                  pin_memory=True)
 
     def match_name_keywords(n, name_keywords):
         out = False
-        for b in name_keywords: 
-            if b in n: 
-                out = True 
+        for b in name_keywords:
+            if b in n:
+                out = True
                 break
         return out
 
     param_dicts = [
         {
-            "params": [p for n, p in model_without_ddp.named_parameters() if not match_name_keywords(n, args.lr_backbone_names) and not match_name_keywords(n, args.lr_linear_proj_names) and p.requires_grad],
+            "params":
+                [p for n, p in model_without_ddp.named_parameters()
+                 if not match_name_keywords(n, args.lr_backbone_names) and not match_name_keywords(n, args.lr_linear_proj_names) and p.requires_grad],
             "lr": args.lr,
         },
         {
@@ -339,9 +359,6 @@ def main(args):
             lr_scheduler.step(lr_scheduler.last_epoch)
             args.start_epoch = checkpoint['epoch'] + 1
 
-    if False:
-        evaluate(model, criterion, None, data_loader_val, device, args.output_dir, args=args)
-
     print("Start training: %d"%args.start_epoch)
     start_time = time.time()
     hota_all = 0
@@ -365,20 +382,7 @@ def main(args):
                     'epoch': epoch,
                     'args': args,
                 }, checkpoint_path)
-        if args.not_valid:  # (epoch * 3 > args.epochs) and (args.not_valid)
-            hota = evaluate(model, criterion, None, data_loader_val, device, args.output_dir, args=args)
-            print(hota)
-            if hota_all < hota:
-                hota_all = hota
-                checkpoint_path = output_dir / f'checkpoint{epoch:04}.pth'
-                utils.save_on_master({
-                    'model': model_without_ddp.state_dict(),
-                    'optimizer': optimizer.state_dict(),
-                    'lr_scheduler': lr_scheduler.state_dict(),
-                    'epoch': epoch,
-                    'args': args,
-                }, checkpoint_path)
-                print(checkpoint_path)
+
         dataset_train.step_epoch()
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
@@ -386,7 +390,7 @@ def main(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser('CO-MOT training and evaluation script', parents=[get_args_parser()])
+    parser = argparse.ArgumentParser('Deformable DETR training and evaluation script', parents=[get_args_parser()])
     args = parser.parse_args()
     if args.output_dir:
         Path(args.output_dir).mkdir(parents=True, exist_ok=True)

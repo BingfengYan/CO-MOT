@@ -256,28 +256,14 @@ class QueryInteractionModuleGroup(QueryInteractionBase):
     def _select_active_tracks(self, data: dict, g_size=1) -> Instances:
         track_instances: Instances = data['track_instances']
         if self.training:
-            num_queries, bs = track_instances.obj_idxes.shape[:2]
-            min_prev_target_ind = min(sum((track_instances.obj_idxes.reshape(-1, g_size, bs)>=0).any(1) | (track_instances.scores.reshape(-1, g_size, bs)> 0.5).any(1) ))
-            
-            active_track_instances = []
-            for i in range(bs):
-                topk_proposals = torch.topk(track_instances.scores.reshape(-1, g_size, bs).min(1)[0][..., i], min_prev_target_ind)[1]
-                index_all = torch.full((num_queries//g_size, g_size), False, dtype=torch.bool, device=topk_proposals.device)
-                index_all[topk_proposals] = True
-                index_all = index_all.reshape(-1)
-                active_track_instances.append(track_instances[index_all])
-            
-            active_track_instances = Instances.merge(active_track_instances)
-            
-            # active_idxes = (track_instances.obj_idxes >= 0) | (track_instances.scores > 0.5)
-            # active_idxes = active_idxes.reshape(-1, g_size).any(dim=1).view(-1, 1).repeat(1, g_size).view(-1)
-            # active_track_instances = track_instances[active_idxes]
+            active_idxes = (track_instances.obj_idxes >= 0) | (track_instances.scores > 0.5)
+            active_idxes = active_idxes.reshape(-1, g_size).any(dim=1).view(-1, 1).repeat(1, g_size).view(-1)
+            active_track_instances = track_instances[active_idxes]
             del_idxes = active_track_instances.iou <= 0.5
-            del_idxes = del_idxes.reshape(-1, g_size, bs).any(dim=1).view(-1, 1, bs).repeat(1, g_size, 1).view(-1, bs)
+            del_idxes = del_idxes.reshape(-1, g_size).any(dim=1).view(-1, 1).repeat(1, g_size).view(-1)
             active_track_instances.obj_idxes[del_idxes] = -1
         else:
-            assert track_instances.obj_idxes.shape[1] == 1
-            active_idxes = track_instances.obj_idxes[:, 0] >= 0
+            active_idxes = track_instances.obj_idxes >= 0
             active_idxes = active_idxes.reshape(-1, g_size).any(dim=1).view(-1, 1).repeat(1, g_size).view(-1)
             # active_idxes = active_idxes.reshape(-1, g_size).all(dim=1).view(-1, 1).repeat(1, g_size).view(-1)
             active_track_instances = track_instances[active_idxes]
@@ -294,7 +280,7 @@ class QueryInteractionModuleGroup(QueryInteractionBase):
         q = k = query_pos + out_embed
 
         tgt = out_embed
-        tgt2 = self.self_attn(q, k, value=tgt)[0]  # bacht 
+        tgt2 = self.self_attn(q[:, None], k[:, None], value=tgt[:, None])[0][:, 0]
         tgt = tgt + self.dropout1(tgt2)
         tgt = self.norm1(tgt)
 
@@ -302,11 +288,11 @@ class QueryInteractionModuleGroup(QueryInteractionBase):
         tgt = tgt + self.dropout2(tgt2)
         tgt = self.norm2(tgt)
 
-        # if self.update_query_pos:
-        #     query_pos2 = self.linear_pos2(self.dropout_pos1(self.activation(self.linear_pos1(tgt))))
-        #     query_pos = query_pos + self.dropout_pos2(query_pos2)
-        #     query_pos = self.norm_pos(query_pos)
-        #     track_instances.query_pos = query_pos
+        if self.update_query_pos:
+            query_pos2 = self.linear_pos2(self.dropout_pos1(self.activation(self.linear_pos1(tgt))))
+            query_pos = query_pos + self.dropout_pos2(query_pos2)
+            query_pos = self.norm_pos(query_pos)
+            track_instances.query_pos = query_pos
 
         query_feat2 = self.linear_feat2(self.dropout_feat1(self.activation(self.linear_feat1(tgt))))
         query_feat = query_feat + self.dropout_feat2(query_feat2)
@@ -1236,7 +1222,7 @@ def pos2posemb(pos, num_pos_feats=64, temperature=10000):
     scale = 2 * math.pi
     pos = pos * scale
     dim_t = torch.arange(num_pos_feats, dtype=torch.float32, device=pos.device)
-    dim_t = temperature ** (2 * (dim_t // 2) / num_pos_feats)
+    dim_t = temperature ** (2 * torch.div(dim_t, 2, rounding_mode="floor") / num_pos_feats)
     posemb = pos[..., None] / dim_t
     posemb = torch.stack((posemb[..., 0::2].sin(), posemb[..., 1::2].cos()), dim=-1).flatten(-3)
     return posemb

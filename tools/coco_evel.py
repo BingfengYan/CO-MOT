@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser('Deformable DETR Detector', add_help=False)
 parser.add_argument('--det_root', default='tracker', type=str)
 args = parser.parse_args()
 
-cocoGt = COCO(annotation_file='/mnt/dolphinfs/hdd_pool/docker/user/hadoop-vacv/yanfeng/data/dancetrack/annotations/val.json')
+cocoGt = COCO(annotation_file='data/dancetrack/annotations/val.json')
 
 
 det_root = args.det_root

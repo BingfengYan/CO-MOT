@@ -66,7 +66,7 @@ class DetMOTDetection:
         # crowdhuman
         self.ch_dir = Path(args.mot_path) / 'crowdhuman'
         self.ch_indices = []
-        if args.append_crowd:
+        if args.append_crowd2:
             for line in open(self.ch_dir / f"annotation_trainval.odgt"):
                 datum = json.loads(line)
                 boxes = [ann['fbox'] for ann in datum['gtboxes'] if not is_crowd(ann)]
@@ -158,7 +158,7 @@ class DetMOTDetection:
             'iscrowd': torch.zeros((n_gts, ), dtype=torch.bool),
             'image_id': torch.tensor([0]),
             'area': areas,
-            'obj_ids': torch.arange(n_gts, dtype=torch.long),
+            'obj_ids': torch.arange(n_gts),
             'size': torch.as_tensor([h, w]),
             'orig_size': torch.as_tensor([h, w]),
             'dataset': "CrowdHuman",
@@ -199,7 +199,7 @@ class DetMOTDetection:
 
         targets['iscrowd'] = torch.as_tensor(targets['iscrowd'])
         targets['labels'] = torch.as_tensor(targets['labels'])
-        targets['obj_ids'] = torch.as_tensor(targets['obj_ids'], dtype=torch.long)
+        targets['obj_ids'] = torch.as_tensor(targets['obj_ids'], dtype=torch.float64)
         targets['scores'] = torch.as_tensor(targets['scores'])
         targets['boxes'] = torch.as_tensor(targets['boxes'], dtype=torch.float32).reshape(-1, 4)
         targets['boxes'][:, 2:] += targets['boxes'][:, :2]

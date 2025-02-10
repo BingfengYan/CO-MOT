@@ -26,6 +26,7 @@ from util.tool import load_model
 from main import get_args_parser
 import torch.backends.cudnn as cudnn
 
+from models.structures import Instances
 from torch.utils.data import Dataset, DataLoader
 
 
@@ -164,7 +165,7 @@ class ListImgDataset(Dataset):
     
     def __getitem__(self, index):  # 加载图像和proposal。并对图像颜色通道转换+resize+normalize+to_tensor。
         img, proposals, f_path = self.load_img_from_file(self.img_list[index])
-        img, ori_img, proposals = self.init_img(img, proposals)
+        img, ori_img, proposals = self.init_img(img, proposals) 
         return img, ori_img, proposals, f_path
 
 
@@ -187,7 +188,7 @@ class Detector(object):
         self.save_path = 'tmp'
 
     @staticmethod
-    def filter_dt_by_score(dt_instances, prob_threshold):
+    def filter_dt_by_score(dt_instances: Instances, prob_threshold: float) -> Instances:
         keep = dt_instances.scores > prob_threshold
         # if keep.sum() % 5 != 0:
         #     print(dt_instances.scores)
@@ -195,14 +196,14 @@ class Detector(object):
         return dt_instances[keep]
 
     @staticmethod
-    def filter_dt_by_area(dt_instances, area_threshold):
-        wh = dt_instances.boxes[..., 2:4] - dt_instances.boxes[..., 0:2]
-        areas = wh[..., 0] * wh[..., 1]
+    def filter_dt_by_area(dt_instances: Instances, area_threshold: float) -> Instances:
+        wh = dt_instances.boxes[:, 2:4] - dt_instances.boxes[:, 0:2]
+        areas = wh[:, 0] * wh[:, 1]
         keep = areas > area_threshold
         return dt_instances[keep]
 
     @staticmethod
-    def visualize_img_with_bbox(img_path, img, dt_instances, ref_pts=None, gt_boxes=None, obj_instances=None):
+    def visualize_img_with_bbox(img_path, img, dt_instances: Instances, ref_pts=None, gt_boxes=None, obj_instances=None):
         if dt_instances.has('scores'):
             img_show = draw_bboxes(img, np.concatenate([dt_instances.boxes, dt_instances.scores.reshape(-1, 1)], axis=-1), dt_instances.obj_idxes)
         else:
@@ -242,7 +243,7 @@ class Detector(object):
             res = self.detr.inference_single_image(cur_img, (seq_h, seq_w), track_instances, proposals)
             track_instances = res['track_instances']
 
-            dt_instances_all = deepcopy(track_instances).get_bn(0)
+            dt_instances_all = deepcopy(track_instances)
 
             # filter det instances by score.
             dt_instances_all = self.filter_dt_by_score(dt_instances_all, prob_threshold)  # 保留置信度比较高的目标（因为motr内部可能会保留相对置信度高一些的目标，但输出需要输出比较高一些）
@@ -273,7 +274,7 @@ class Detector(object):
                     all_ref_pts = None # tensor_to_numpy(res['ref_pts'][0, :, :2])
                     self.visualize_img_with_bbox(cur_vis_img_path, ori_img.to(torch.device('cpu')).numpy().copy(), dt_instances.to(torch.device('cpu')), ref_pts=all_ref_pts, gt_boxes=gt_boxes)
                     if 'track_instances_ori' in res:
-                        active_track_instances = res['track_instances_ori']
+                        active_track_instances: Instances = res['track_instances_ori']
                         active_track_instances = active_track_instances[active_track_instances.scores_obj >= 0.3]
                         active_track_instances.scores = active_track_instances.scores_obj
                         active_track_instances = active_track_instances.to(torch.device('cpu'))
@@ -293,6 +294,7 @@ class Detector(object):
                 f.writelines(lines[g_id])
             print("{}: totally {} dts {} occlusion dts".format(self.seq_num, total_dts[g_id], total_occlusion_dts[g_id]))
 
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser('DETR training and evaluation script', parents=[get_args_parser()])
@@ -311,16 +313,13 @@ if __name__ == '__main__':
     # load model and weights
     detr, _, _ = build_model(args)
     detr.track_embed.score_thr = args.update_score_threshold
-    # detr.track_base = RuntimeTrackerBase(args.score_threshold, args.score_threshold, args.miss_tolerance)
     checkpoint = torch.load(args.resume, map_location='cpu')
     detr = load_model(detr, args.resume)
     detr.eval()
     detr = detr.cuda()
 
-    # '''for MOT17 submit''' 
-    # sub_dir = 'dancetrack/test' 
-    sub_dir = 'dancetrack/val'
-    # sub_dir = 'dancetrack/train'
+    # '''for Dancetrack submit''' 
+    sub_dir = 'dancetrack/test' 
     seq_nums = os.listdir(os.path.join(args.mot_path, sub_dir))
     if 'seqmap' in seq_nums:
         seq_nums.remove('seqmap')
@@ -332,25 +331,4 @@ if __name__ == '__main__':
 
     for ith, vid in enumerate(vids):
         det = Detector(args, model=detr, vid=vid)
-        det.detect(args.score_threshold, vis=False)
-        # break
-
-    # for g_id in range(args.g_size):
-    #     os.system("python TrackEval/scripts/run_mot_challenge.py --SPLIT_TO_EVAL val  --METRICS HOTA CLEAR Identity  --GT_FOLDER ~/yanfeng/data/dancetrack/val  --SEQMAP_FILE ~/yanfeng/data/dancetrack/val_seqmap.txt --SKIP_SPLIT_FOL True   --TRACKERS_TO_EVAL '' --TRACKER_SUB_FOLDER ''  --USE_PARALLEL True --NUM_PARALLEL_CORES 8 --PLOT_CURVES False --TRACKERS_FOLDER %s"%(det.predict_path+'%d'%g_id))
-    import sys
-    sys.path.append("/mnt/dolphinfs/hdd_pool/docker/user/hadoop-vacv/yanfeng/project/MOTRv2/MOTRv3/TrackEval/scripts")
-    import run_mot_challenge
-    for g_id in range(args.g_size):
-        res_eval = run_mot_challenge.main(SPLIT_TO_EVAL="val",
-                    METRICS=['HOTA', 'CLEAR', 'Identity'],
-                    GT_FOLDER="/mnt/dolphinfs/hdd_pool/docker/user/hadoop-vacv/yanfeng/data/dancetrack/val",
-                    SEQMAP_FILE="/mnt/dolphinfs/hdd_pool/docker/user/hadoop-vacv/yanfeng/data/dancetrack/val_seqmap.txt",
-                    SKIP_SPLIT_FOL=True,
-                    TRACKERS_TO_EVAL=[''],
-                    TRACKER_SUB_FOLDER='',
-                    USE_PARALLEL=True,
-                    NUM_PARALLEL_CORES=8,
-                    PLOT_CURVES=False,
-                    TRACKERS_FOLDER="%s"%(det.predict_path+'%d'%g_id)
-                    )
-        print(float(res_eval[0]['MotChallenge2DBox']['']['COMBINED_SEQ']['pedestrian']['summaries'][0]['HOTA']))
+        det.detect(args.score_threshold, vis=True)

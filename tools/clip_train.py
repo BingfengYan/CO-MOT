@@ -4,7 +4,7 @@ import numpy as np
 from collections import defaultdict
 
 
-root_data = '/home/hadoop-vacv/yanfeng/data/MOT/MOT17_all/train'
+root_data = 'data/MOT/MOT17_all/train'
 vids = os.listdir(root_data)
 
 for v in vids:

@@ -17,7 +17,7 @@ Mostly copy-paste from torchvision references.
 import os
 import subprocess
 import time
-from collections import OrderedDict, defaultdict, deque
+from collections import defaultdict, deque
 import datetime
 import pickle
 from typing import Optional, List
@@ -278,26 +278,15 @@ def collate_fn(batch):
     return tuple(batch)
 
 
-# def mot_collate_fn(batch: List[dict]) -> dict:
-#     ret_dict = {}
-#     for key in list(batch[0].keys()):
-#         assert not isinstance(batch[0][key], Tensor)
-#         ret_dict[key] = [img_info[key] for img_info in batch]
-#         # if len(ret_dict[key]) == 1:
-#         #     ret_dict[key] = ret_dict[key][0]
-#         # else:
-#         if not isinstance(ret_dict[key], list):
-#             ret_dict[key] = list(map(list, zip(*ret_dict[key])))
-#     return ret_dict
-
- def mot_collate_fn(batch: List[dict]) -> dict:
+def mot_collate_fn(batch: List[dict]) -> dict:
     ret_dict = {}
     for key in list(batch[0].keys()):
         assert not isinstance(batch[0][key], Tensor)
         ret_dict[key] = [img_info[key] for img_info in batch]
-        if  isinstance(ret_dict[key][0], list):
-            ret_dict[key] = list(map(list, zip(*ret_dict[key])))
+        if len(ret_dict[key]) == 1:
+            ret_dict[key] = ret_dict[key][0]
     return ret_dict
+
 
 def _max_by_axis(the_list):
     # type: (List[List[int]]) -> List[int]

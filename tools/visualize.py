@@ -39,13 +39,13 @@ def bboxes_iou(bboxes1,bboxes2):
 def get_color(i):
     return [(i * 23 * j + 43) % 255 for j in range(3)]
 
-with open("/mnt/dolphinfs/hdd_pool/docker/user/hadoop-vacv/yanfeng/data/dancetrack/det_db_motrv2.json") as f:
+with open("dancetrack/det_db_motrv2.json") as f:
     det_db = json.load(f)
 
 def process(trk_path, img_list, output="output.mp4"):
     h, w, _ = cv2.imread(img_list[0]).shape
     command = [
-        "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-vacv/yanfeng/software/anaconda3/envs/detrex/bin/ffmpeg",
+        "anaconda3/envs/detrex/bin/ffmpeg",
         '-y',  # overwrite output file if it exists
         '-f', 'rawvideo',
         '-vcodec','rawvideo',
@@ -77,7 +77,7 @@ def process(trk_path, img_list, output="output.mp4"):
         im = cv2.imread(path)
         det_bboxes = []
         motr_bboxes = []
-        for det in det_db[path.replace('/mnt/dolphinfs/ssd_pool/docker/user/hadoop-vacv/yanfeng/data/', '').replace('.jpg', '.txt').replace('dancetrack/', 'DanceTrack/')]:
+        for det in det_db[path.replace('data/', '').replace('.jpg', '.txt').replace('dancetrack/', 'DanceTrack/')]:
             x1, y1, w, h, s = map(float, det.strip().split(','))
             x1, y1, w, h = map(int, [x1, y1, w, h])
             im = cv2.rectangle(im, (x1, y1), (x1+w, y1+h), (255, 255, 255), 2)
@@ -104,7 +104,7 @@ def process(trk_path, img_list, output="output.mp4"):
 def process_compare(trk_path1, trk_path2, gt_path, img_list, output="output.mp4"):
     h, w, _ = cv2.imread(img_list[0]).shape
     command = [
-        "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-vacv/yanfeng/software/anaconda3/envs/detrex/bin/ffmpeg",
+        "anaconda3/envs/detrex/bin/ffmpeg",
         '-y',  # overwrite output file if it exists
         '-f', 'rawvideo',
         '-vcodec','rawvideo',
@@ -204,11 +204,9 @@ if __name__ == '__main__':
         seq = 'dancetrack0004.txt'
         print(seq)
         trk_path = "exps/motrv2_group/run2/tracker_max_max/" + seq
-        gt_path = "/mnt/dolphinfs/hdd_pool/docker/user/hadoop-vacv/yanfeng/data/dancetrack/val/%s/gt/gt.txt"%(seq[:-4])
-        
-        # trk_path = "/data/Dataset/mot/DancdancetrackeTrack/val/dancetrack0010/gt/gt.txt"
-
-        img_list = glob(f"/mnt/dolphinfs/ssd_pool/docker/user/hadoop-vacv/yanfeng/data/dancetrack/val/{seq[:-4]}/img1/*.jpg")
+        gt_path = "dancetrack/val/%s/gt/gt.txt"%(seq[:-4])
+      
+        img_list = glob(f"dancetrack/val/{seq[:-4]}/img1/*.jpg")
         # process(trk_path, img_list, f'tmp/{seq[:-4]}.avi')
         
         trk_path2 = "exps/motrv2_group/run2/tracker_max_min/" + seq

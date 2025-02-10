@@ -121,7 +121,7 @@ class MSDeformAttn(nn.Module):
         #     features_grad = g
         # value.requires_grad=True
         # value.register_hook(extract)
-        sampling_locations = sampling_locations.contiguous()
+        
         output = MSDeformAttnFunction.apply(value, input_spatial_shapes, input_level_start_index, sampling_locations, attention_weights, self.im2col_step)
         # output = MSDeformAttnFunction.apply(value.double(), input_spatial_shapes, input_level_start_index, sampling_locations.double(), attention_weights.double(), self.im2col_step).float()
         # output = ms_deform_attn_core_pytorch(value, input_spatial_shapes, sampling_locations, attention_weights)
