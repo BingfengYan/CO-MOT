@@ -13,8 +13,6 @@ This repository is an official implementation of [CO-MOT](https://arxiv.org/abs/
 
 
 
-**TO DO**
-1. add DINO backbone
 
 ## Introduction
 
