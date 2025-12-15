@@ -132,3 +132,14 @@ zip motrv2.zip tracker/ -r
 - [DanceTrack](https://github.com/DanceTrack/DanceTrack)
 - [BDD100K](https://github.com/bdd100k/bdd100k)
 - [MOTRv2](https://github.com/megvii-research/MOTRv2)
+
+```bash
+@inproceedings{
+yan2025comot,
+title={{CO}-{MOT}: Boosting End-to-end Transformer-based Multi-Object Tracking via Coopetition Label Assignment and Shadow Sets},
+author={Feng yan and Weixin Luo and Yujie Zhong and Yiyang Gan and Lin Ma},
+booktitle={The Thirteenth International Conference on Learning Representations},
+year={2025},
+url={https://openreview.net/forum?id=0ov0dMQ3mN}
+}
+```
